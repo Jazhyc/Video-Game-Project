@@ -22,7 +22,7 @@ function Power:update(dt)
     for i, v in ipairs(self.POWERS) do
         v.r = v.r + self.speed * dt
 
-        if v.r > Virtual_Width / 4 + 20 then
+        if v.r > Virtual_Width  / 4 + 20 then
             table.remove(self.POWERS, i)
         end
     end
