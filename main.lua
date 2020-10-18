@@ -14,6 +14,7 @@ require 'Sky'
 require 'Power'
 require 'Weather'
 require 'Enemy'
+require 'Animation'
 
 function love.load()
 
@@ -53,7 +54,7 @@ function love.load()
 
     music['temp']:setLooping(true)
     music['temp']:setVolume(0.1)
-    music['temp']:play()
+    --music['temp']:play()
     
     love.graphics.setFont(fonts['font1'])
 
@@ -66,7 +67,14 @@ function love.keypressed(key)
     end
 
     if key == 'q' then
-        power:spawn(player.x + player.width / 2, player.y + player.height / 2)
+        power:Wavespawn(player.x + player.width / 2, player.y + player.height / 2)
+    end
+
+    if key == 'f' then
+        if not power.inultimate then
+            power:Ballspawn(player.x, player.y)
+            power.inultimate = true
+        end
     end
 
     if key == 'z' then

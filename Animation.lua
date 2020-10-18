@@ -7,7 +7,6 @@ function Animation:init(params)
     self.interval = params.interval or 0.5 -- Set default value
     self.timer = 0
     self.currentFrame = 1
-
 end
 
 function Animation:getCurrentFrame() -- Return current animation

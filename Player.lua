@@ -20,8 +20,10 @@ function Player:init()
     self.x = 30
     self.y = 30
     self.xdir = 1
-    self.width = 64
-    self.height = 64
+
+    -- Need to finalize this
+    self.width = 96
+    self.height = 96
     self.dx = 0
     self.dy = 0
 
@@ -34,7 +36,19 @@ function Player:init()
     self.dTStart = false
     self.canDash = true
 
-    self.image = love.graphics.newImage('Images/Llama.png')
+    self.texture = love.graphics.newImage('Images/hero.png')
+    self.frames = generateQuads(self.texture, 96, 96)
+    
+    self.animations = {
+        ['hole'] = Animation {
+            texture = self.texture,
+            frames = {unpack(self.frames, 1, 3)}, -- Remember that indexing starts from 1 in lua
+            interval = 0.3
+        },
+        ['dummy'] = 1
+    }
+
+    self.animation = self.animations['hole']
 
     self.behaviours = {
         ['walking'] = function(dt)
@@ -100,6 +114,8 @@ function Player:control()
 end
 
 function Player:update(dt)
+
+    self.animation:update(dt) -- Change later on
     self.x = self.x + self.dx * dt
 
     -- Flooring prevents Blurring
@@ -146,8 +162,9 @@ function Player:update(dt)
     end
 end
 
-function Player:render() -- Changed Player Orgin to Center
-    love.graphics.draw(self.image, self.x, self.y, 0, self.xdir, 1, self.width / 2, self.height / 2)
+function Player:render() -- Changed Player Orgin to Center, Need to make it adaptable later
+    love.graphics.draw(self.texture, self.animation:getCurrentFrame(),
+    self.x, self.y, 0, self.xdir, 1, self.width / 2, self.height / 2)
 end
 
 function Player:Jump()
