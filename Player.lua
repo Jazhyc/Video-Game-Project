@@ -13,8 +13,9 @@ local Dash_Reset = 0.8
 
 function Player:init()
 
+    -- Some wierd bug with zero values can happen
     self.hp = 10
-    self.mp = 10
+    self.mp = 100
 
     -- Physical Parameters
     self.x = 30
@@ -100,6 +101,8 @@ function Player:init()
         ['jump'] = love.audio.newSource('Sounds/jump.wav', 'static'),
         ['dash'] = love.audio.newSource('Sounds/dash.wav', 'static')
     }
+
+    self.sounds['jump']:setVolume(0.5)
 end
 
 function Player:control()
@@ -117,6 +120,8 @@ function Player:update(dt)
 
     self.animation:update(dt) -- Change later on
     self.x = self.x + self.dx * dt
+    self.mp = math.max(math.min(self.mp + dt * 10, 100), 10)
+    self.hp = math.max(math.min(self.hp + dt, 10), 1)
 
     -- Flooring prevents Blurring
     self.y = math.floor(math.min(self.y + self.dy * dt, Virtual_Height - self.height / 2))

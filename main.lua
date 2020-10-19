@@ -1,5 +1,5 @@
 Window_Width, Window_Height = love.window.getDesktopDimensions()
-Window_Width, Window_Height = Window_Width * 0.8, Window_Height * 0.8
+Window_Width, Window_Height = Window_Width * 1, Window_Height * 1
 Virtual_Width = 576
 Virtual_Height = 324
 
@@ -39,7 +39,6 @@ function love.load()
     power = Power(100, 250)
     sky = Sky()
     weather = Weather()
-
     enemy = Enemy()
 
     fonts = {
@@ -54,7 +53,7 @@ function love.load()
 
     music['temp']:setLooping(true)
     music['temp']:setVolume(0.1)
-    --music['temp']:play()
+    music['temp']:play()
     
     love.graphics.setFont(fonts['font1'])
 
@@ -75,6 +74,10 @@ function love.keypressed(key)
             power:Ballspawn(player.x, player.y)
             power.inultimate = true
         end
+    end
+
+    if key == 'r' then
+        power:Pillarspawn()
     end
 
     if key == 'z' then
@@ -159,6 +162,7 @@ function getFps()
     fps = love.timer.getFPS()
     love.graphics.print(fps, fonts['font1'], 0, Virtual_Height - 12)
 end
+
 -- shake function
 function shake(s)
     love.graphics.translate(s, 0)

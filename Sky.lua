@@ -11,7 +11,8 @@ function Sky:init()
         ['night'] = love.graphics.newImage('Images/night1.png'),
         ['day'] = love.graphics.newImage('Images/day.png'),
         ['moon'] = love.graphics.newImage('Images/moon.png'),
-        ['sun'] = love.graphics.newImage('Images/sun.png')
+        ['sun'] = love.graphics.newImage('Images/sun.png'),
+        ['forest'] = love.graphics.newImage('Images/forest.png')
     }
 
     self.state = 'day' -- Initial State
@@ -35,6 +36,8 @@ function Sky:render()
         love.graphics.draw(self.images['day'], 0, 0)
         love.graphics.draw(self.images['sun'], x, y)
     end
+
+    love.graphics.draw(self.images['forest'], 0, 0)
 
     if self.angle > 0 then
         if self.state == 'night' then
