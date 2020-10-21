@@ -25,7 +25,7 @@ function Power:init(charges, speed)
 
     self.frames = {
         ['hole'] = generateQuads(self.textures['hole'], 96, 96),
-        ['pillar'] = generateQuads(self.textures['pillar'], 96, 324)
+        ['pillar'] = generateQuads(self.textures['pillar'], 64, 324)
     }
 
     self.animations = {
@@ -33,11 +33,6 @@ function Power:init(charges, speed)
             texture = self.textures['hole'],
             frames = {unpack(self.frames['hole'], 1, 70)},
             interval = 0.05
-        },
-
-        ['pillar'] = Animation {
-            texture = self.textures['pillar'],
-            frames = {unpack(self.frames['pillar'], 1, 16)}
         }
     }
 end
@@ -61,8 +56,8 @@ function Power:Pillarspawn() -- Spawns each pillar with a separate animation poo
     table.insert(self.Pillars, {x = player.x + math.random(-400, 400), y = 0, time = 0, 
     animation = Animation {
         texture = self.textures['pillar'],
-        frames = {unpack(self.frames['pillar'], 1, 16)},
-        interval = 0.05
+        frames = {unpack(self.frames['pillar'], 1, 50)},
+        interval = 0.04
     }
     })
 end
@@ -101,7 +96,7 @@ function Power:update(dt)
         v.animation:update(dt)
         v.time = v.time + dt
 
-        if v.time > 0.05 * 16 then
+        if v.time > 0.04 * 50 then
             table.remove(self.Pillars, i)
         end
     end

@@ -1,5 +1,5 @@
 Window_Width, Window_Height = love.window.getDesktopDimensions()
-Window_Width, Window_Height = Window_Width * 1, Window_Height * 1
+Window_Width, Window_Height = Window_Width * 0.9, Window_Height * 0.9
 Virtual_Width = 576
 Virtual_Height = 324
 
@@ -15,6 +15,7 @@ require 'Power'
 require 'Weather'
 require 'Enemy'
 require 'Animation'
+require 'NPC'
 
 function love.load()
 
@@ -40,6 +41,7 @@ function love.load()
     sky = Sky()
     weather = Weather()
     enemy = Enemy()
+    npc = NPC()
 
     fonts = {
         ['font1'] = love.graphics.newFont('Fonts/font.ttf', 16),
@@ -53,7 +55,7 @@ function love.load()
 
     music['temp']:setLooping(true)
     music['temp']:setVolume(0.1)
-    music['temp']:play()
+    --music['temp']:play()
     
     love.graphics.setFont(fonts['font1'])
 
@@ -103,7 +105,7 @@ function love.draw()
     
     elseif gameState == 'play' then
         sky:render()
-        weather:render()
+        --weather:render()
         getFps()
 
         love.graphics.translate(-player.x + Virtual_Width / 2, 0)
@@ -117,6 +119,7 @@ function love.draw()
         player:render()
         power:render()
         enemy:render()
+        npc:render()
 
         -- Makes sure UI overlaps everything
         love.graphics.translate(player.x - Virtual_Width / 2, 0)
@@ -150,9 +153,10 @@ function love.update(dt)
         power:update(dt)
         player:update(dt)
         player:control(dt)
-        weather:update(dt)
+        --weather:update(dt)
         sky:update(dt)
         enemy:update(dt)
+        npc:update(dt)
     end
 
     love.keyboard.keysPressed = {}
