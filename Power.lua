@@ -2,25 +2,30 @@ Power = Class{}
 
 local Wavecost = 20
 local Ballcost = 50
+local knivespeed = 400
 
 function Power:init(charges, speed)
     self.Waves = {}
     self.Balls = {}
     self.Pillars = {}
+    self.Knives = {}
+
     self.speed = speed
     self.inultimate = false
 
     self.sounds = {
-        ['aoe'] = love.audio.newSource('Sounds/aoe.wav', 'static')
+        ['aoe'] = love.audio.newSource('Sounds/aoe.wav', 'static'),
+        ['sharan'] = love.audio.newSource('Sounds/xox.mp3', 'static')
     }
 
     self.images = {
-        ['Ladoo'] = love.graphics.newImage('Images/sbladoo.png')
+        ['Ladoo'] = love.graphics.newImage('Images/sbladoo.png'),
+        ['knive'] = love.graphics.newImage('Images/knife.png')
     }
 
     self.textures = {
-        ['hole'] = love.graphics.newImage('Images/bladooholemk3.png'),
-        ['pillar'] = love.graphics.newImage('Images/pillar.png')
+        ['hole'] = love.graphics.newImage('Images/bladooholemk4.png'),
+        ['pillar'] = love.graphics.newImage('Images/pillarmk2.png')
     }
 
     self.frames = {
@@ -31,8 +36,8 @@ function Power:init(charges, speed)
     self.animations = {
         ['hole'] = Animation {
             texture = self.textures['hole'],
-            frames = {unpack(self.frames['hole'], 1, 70)},
-            interval = 0.05
+            frames = {unpack(self.frames['hole'], 1, 495)}, -- Are these many frames really necessary?
+            interval = 0.0064
         }
     }
 end
@@ -47,7 +52,7 @@ end
 
 function Power:Ballspawn(x, y)
     if player.mp - 10 > Ballcost then
-        table.insert(self.Balls, {x = x, y = y, r = 48, dir = player.xdir, time = 0, state = 'moving', atime = 0})
+        table.insert(self.Balls, {x = x, y = y, r = 48, dir = player.xdir * player.sprdir, time = 0, state = 'moving', atime = 0})
         player.mp = player.mp - Ballcost
     end
 end
@@ -56,10 +61,14 @@ function Power:Pillarspawn() -- Spawns each pillar with a separate animation poo
     table.insert(self.Pillars, {x = player.x + math.random(-400, 400), y = 0, time = 0, 
     animation = Animation {
         texture = self.textures['pillar'],
-        frames = {unpack(self.frames['pillar'], 1, 50)},
-        interval = 0.04
+        frames = {unpack(self.frames['pillar'], 1, 393)},
+        interval = 0.00515
     }
     })
+end
+
+function Power:Knifespawn(x, y)
+    table.insert(self.Knives, {x = x, y = y, dx = 60, xdir = player.xdir * player.sprdir, time = 0})
 end
 
 function Power:update(dt)
@@ -100,6 +109,15 @@ function Power:update(dt)
             table.remove(self.Pillars, i)
         end
     end
+
+    for i, v in ipairs(self.Knives) do
+        v.x = v.x + knivespeed * v.xdir * dt
+        v.time = v.time + dt
+
+        if v.time > 5 then
+            table.remove(self.Knives, i)
+        end
+    end
 end
 
 function Power:render()
@@ -119,5 +137,9 @@ function Power:render()
 
     for i, v in ipairs(self.Pillars) do
         love.graphics.draw(self.textures['pillar'], v.animation:getCurrentFrame(), math.floor(v.x), 0)
+    end
+
+    for i, v in ipairs(self.Knives) do
+        love.graphics.draw(self.images['knive'], math.floor(v.x), math.floor(v.y), 0, v.xdir * -1) -- Sprite is facing left
     end
 end

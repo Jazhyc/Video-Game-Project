@@ -67,8 +67,8 @@ function Enemy:update(dt)
 
                         if not v.dead then
                             ball.state = 'detonate'
-                            v.y = ball.y + ball.r / 3 + 9
-                            v.x = v.x + 1 * v.xdir
+                            v.y = ball.y + ball.r / 3 + 24
+                            v.x = (v.x + 12) + 1 * v.xdir
                             v.dead = true
                             v.rotation = math.random(-3.14, 3.14)
                         end
@@ -112,4 +112,3 @@ function Enemy:render()
         v.rotation, v.xdir, v.scale, v.size * 2) -- Wierd hitbox
     end
 end 
-

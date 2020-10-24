@@ -23,8 +23,8 @@ function Player:init()
     self.xdir = 1
 
     -- Need to finalize this
-    self.width = 96
-    self.height = 96
+    self.width = 64
+    self.height = 64
     self.dx = 0
     self.dy = 0
 
@@ -37,21 +37,72 @@ function Player:init()
     self.dTStart = false
     self.canDash = true
 
-    self.texture = love.graphics.newImage('Images/hero.png')
-    self.frames = generateQuads(self.texture, 96, 96)
-    
-    self.animations = {
-        ['hole'] = Animation {
-            texture = self.texture,
-            frames = {unpack(self.frames, 1, 3)}, -- Remember that indexing starts from 1 in lua
-            interval = 0.3
-        },
-        ['dummy'] = 1
+    self.attacktimer = 0
+    self.knivesthrown1 = false
+    self.knivesthrown2 = false
+
+    --Sprite is Facing Left side, so xdir is inversed. Change to 1 for right facing sprites
+    self.sprdir = -1 -- Sprite Directions
+
+    -- Two different files for moving and attacking
+    self.textures = {
+        ['attacking'] = love.graphics.newImage('Images/banditattacking.png'),
+        ['walking'] = love.graphics.newImage('Images/banditwalking.png')
     }
 
-    self.animation = self.animations['hole']
+    self.frames = {
+        ['attacking'] = generateQuads(self.textures['attacking'], self.width, self.height),
+        ['walking'] = generateQuads(self.textures['walking'], self.width, self.height)
+    }
+
+    
+    self.animations = {
+        ['attacking'] = Animation {
+            texture = self.textures['attacking'],
+            frames = {unpack(self.frames['attacking'], 1, 42)}, -- Remember that indexing starts from 1 in lua
+            interval = 0.015
+        },
+
+        ['walking'] = Animation {
+            texture = self.textures['walking'],
+            frames = {unpack(self.frames['walking'], 1, 38)},
+            interval = 0.025
+        },
+
+        ['jumping'] = Animation {
+            texture = self.textures['attacking'],
+            frames = {unpack(self.frames['attacking'], 1, 1)}
+        },
+
+        ['dashing'] = Animation {
+            texture = self.textures['attacking'],
+            frames = {unpack(self.frames['attacking'], 1, 1)}
+        },
+
+        ['standing'] = Animation {
+            texture = self.textures['attacking'],
+            frames = {unpack(self.frames['attacking'], 1, 1)}
+        }
+    }
+
+    self.animation = self.animations['walking']
 
     self.behaviours = {
+
+        ['standing'] = function(dt) -- Similar to walking, only difference ia the animation
+            self.dash = 0
+            self.jumpval = 0
+
+            if love.keyboard.wasPressed('space') then
+                self:Jump()
+            end
+
+            if love.keyboard.wasPressed('lshift') and self.canDash then
+                self.state = 'dashing'
+                self.sounds['dash']:play()
+            end
+        end,
+
         ['walking'] = function(dt)
             self.dash = 0
             self.jumpval = 0
@@ -87,13 +138,27 @@ function Player:init()
                 self:Jump()
             end
 
-            self.dx = Dash_xVelocity * self.xdir
+            self.dx = Dash_xVelocity * self.xdir * self.sprdir
             self.dy = -Dash_yVelocity
             self.dTStart = true
             self.canDash = false
             -- make t = 0 for shake function to activate
             shake = 20
 
+        end,
+
+        ['attacking'] = function(dt)
+            if self.attacktimer > 0.015 * 25 and not self.knivesthrown1 then
+                self.knivesthrown1 = true
+                power:Knifespawn(player.x + 10 * self.xdir, player.y)
+                power:Knifespawn(player.x + 10 * self.xdir, player.y + 5)
+            end
+
+            if self.attacktimer > 0.015 * 28 and not self.knivesthrown2 then
+                self.knivesthrown2 = true
+                power:Knifespawn(player.x + 10 * self.xdir, player.y - 5)
+                power:Knifespawn(player.x + 10 * self.xdir, player.y + 10)
+            end
         end
     }
 
@@ -107,18 +172,27 @@ end
 
 function Player:control()
     -- self.xdir keeps track of direction
-    if (love.keyboard.isDown('a') or love.keyboard.isDown('left')) and self.dTStart == false then
-        self.dx = -Speed
-        self.xdir = -1
-    elseif (love.keyboard.isDown('d') or love.keyboard.isDown('right')) and self.dTStart == false then
-        self.dx = Speed
-        self.xdir = 1
-    end  
+    if not self.dTStart and self.state ~= 'attacking' then
+        if (love.keyboard.isDown('a') or love.keyboard.isDown('left')) then
+            self.dx = -Speed
+            self.xdir = 1
+
+            if self.state == 'standing' then self.state = 'walking', self.animations['walking']:reset() end
+            
+        elseif (love.keyboard.isDown('d') or love.keyboard.isDown('right')) then
+            self.dx = Speed
+            self.xdir = -1
+
+            if self.state == 'standing' then self.state = 'walking', self.animations['walking']:reset() end
+        elseif self.state ~= 'jumping' then
+            self.state = 'standing'
+            self.animation:reset()
+        end
+    end
 end
 
 function Player:update(dt)
 
-    self.animation:update(dt) -- Change later on
     self.x = self.x + self.dx * dt
     self.mp = math.max(math.min(self.mp + dt * 10, 100), 10)
     self.hp = math.max(math.min(self.hp + dt, 10), 1)
@@ -127,6 +201,7 @@ function Player:update(dt)
     self.y = math.floor(math.min(self.y + self.dy * dt, Virtual_Height - self.height / 2))
 
     self.behaviours[self.state](dt)
+    self.animation:update(dt) -- Change later on
 
     -- restoring force for dash
     if self.state == 'dashing' then
@@ -165,11 +240,35 @@ function Player:update(dt)
             self.dashResetTimer = 0
         end
     end
+
+    if love.keyboard.wasPressed('g') then
+        self.state = 'attacking'
+    end
+
+    if self.state == 'attacking' then
+        self.attacktimer = self.attacktimer + dt
+
+        if self.attacktimer > 42 * 0.015 then
+            self.attacktimer = 0
+            self.knivesthrown1 = false
+            self.knivesthrown2 = false
+            self.animation:reset()
+            self.state = 'standing'
+        end
+    end
+
+    -- Kept last to prevent issues with the render function
+    self.animation = self.animations[self.state]
 end
 
 function Player:render() -- Changed Player Orgin to Center, Need to make it adaptable later
-    love.graphics.draw(self.texture, self.animation:getCurrentFrame(),
-    self.x, self.y, 0, self.xdir, 1, self.width / 2, self.height / 2)
+    if self.state == 'attacking' or self.state == 'walking' then
+        love.graphics.draw(self.textures[self.state], self.animation:getCurrentFrame(),
+        self.x, self.y, 0, self.xdir, 1, self.width / 2, self.height / 2)
+    else
+        love.graphics.draw(self.textures['attacking'], self.animation:getCurrentFrame(),
+        self.x, self.y, 0, self.xdir, 1, self.width / 2, self.height / 2)
+    end
 end
 
 function Player:Jump()

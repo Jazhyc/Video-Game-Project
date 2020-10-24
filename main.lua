@@ -55,7 +55,7 @@ function love.load()
 
     music['temp']:setLooping(true)
     music['temp']:setVolume(0.1)
-    --music['temp']:play()
+    music['temp']:play()
     
     love.graphics.setFont(fonts['font1'])
 
@@ -73,7 +73,7 @@ function love.keypressed(key)
 
     if key == 'f' then
         if not power.inultimate then
-            power:Ballspawn(player.x, player.y)
+            power:Ballspawn(player.x, player.y - 24)
             power.inultimate = true
         end
     end
